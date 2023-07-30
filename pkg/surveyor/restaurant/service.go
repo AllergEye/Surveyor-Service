@@ -37,16 +37,43 @@ func (s RestaurantServiceImplementation) GetAllRestaurants() ([]restaurant.Resta
 	return restaurants, nil
 }
 
-func (s RestaurantServiceImplementation) AddRestaurant(restaurant restaurant.Restaurant) error {
-	_, err := s.restaurantRepo.GetRestaurantByName(restaurant.Name)
+func (s RestaurantServiceImplementation) AddRestaurant(restaurantToAdd restaurant.Restaurant) error {
+	existingRestaurant, err := s.restaurantRepo.GetRestaurantByName(restaurantToAdd.Name)
+
+	locationsToAdd := make([]restaurant.Location, 0)
 	if err == nil {
-		return ErrRestaurantAlreadyExists
+		for _, location := range restaurantToAdd.Locations {
+			found := false
+			for _, existingLocation := range existingRestaurant.Locations {
+				if s.locationsMatch(location, existingLocation) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				locationsToAdd = append(locationsToAdd, location)
+			}
+		}
+
+		if len(locationsToAdd) == 0 {
+			return ErrRestaurantAlreadyExists
+		}
+
+		err = s.restaurantRepo.UpdateRestaurantLocations(*existingRestaurant, locationsToAdd)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
-	err = s.restaurantRepo.AddRestaurant(restaurant)
+	err = s.restaurantRepo.AddRestaurant(restaurantToAdd)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s RestaurantServiceImplementation) locationsMatch(location restaurant.Location, targetLocation restaurant.Location) bool {
+	return location.StreetAddressLine1 == targetLocation.StreetAddressLine1 && location.StreetAddressLine2 == targetLocation.StreetAddressLine2 && location.City == targetLocation.City && location.Province == targetLocation.Province && location.Country == targetLocation.Country && location.PostalCode == targetLocation.PostalCode
 }

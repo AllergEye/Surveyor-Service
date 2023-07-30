@@ -7,12 +7,14 @@ import (
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type RestaurantRepository interface {
 	GetAllRestaurants() ([]restaurant.Restaurant, error)
 	GetRestaurantByName(name string) (*restaurant.Restaurant, error)
 	AddRestaurant(restaurant restaurant.Restaurant) error
+	UpdateRestaurantLocations(restaurant restaurant.Restaurant, locations []restaurant.Location) error
 }
 
 type RestaurantRepositoryImplementation struct {
@@ -65,7 +67,7 @@ func (r RestaurantRepositoryImplementation) AddRestaurant(restaurant restaurant.
 }
 
 func (r RestaurantRepositoryImplementation) GetRestaurantByName(name string) (*restaurant.Restaurant, error) {
-	var result restaurant.Restaurant
+	var result RestaurantModel
 
 	coll := r.client.Database("allergeye").Collection("restaurants")
 	filter := bson.D{{"name", name}}
@@ -75,5 +77,30 @@ func (r RestaurantRepositoryImplementation) GetRestaurantByName(name string) (*r
 		return nil, fmt.Errorf("restaurantRepository.GetRestaurantByName: %w, %v", err, err)
 	}
 
-	return &result, nil
+	restaurant, err := unmarshalRestaurant(&result)
+	if err != nil {
+		return nil, fmt.Errorf("restaurantRepository.GetRestaurantByName: %w, %v", err, err)
+	}
+
+	return restaurant, nil
+}
+
+func (r RestaurantRepositoryImplementation) UpdateRestaurantLocations(restaurant restaurant.Restaurant, locations []restaurant.Location) error {
+	models, err := marshalLocations(locations)
+	if err != nil {
+		return fmt.Errorf("restaurantRepository.UpdateRestaurantLocations: %w, %v", err, err)
+	}
+
+	coll := r.client.Database("allergeye").Collection("restaurants")
+	filter := bson.D{{"restaurant_id", restaurant.RestaurantId.String()}}
+	change := bson.M{"$push": bson.M{"locations": bson.M{"$each": models}}}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	var updatedRestaurant RestaurantModel
+	err = coll.FindOneAndUpdate(context.TODO(), filter, change, opts).Decode(&updatedRestaurant)
+	if err != nil {
+		return fmt.Errorf("restaurantRepository.UpdateRestaurantLocations: %w, %v", err, err)
+	}
+
+	return nil
 }
