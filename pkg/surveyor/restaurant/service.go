@@ -1,6 +1,7 @@
 package surveyor
 
 import (
+	"context"
 	"errors"
 
 	"github.com/allergeye/surveyor-service/internal/database"
@@ -9,13 +10,13 @@ import (
 )
 
 type RestaurantService interface {
-	GetAllRestaurants() ([]restaurant.Restaurant, error)
-	AddRestaurant(restaurant restaurant.Restaurant) error
+	GetAllRestaurants(ctx context.Context) ([]restaurant.Restaurant, error)
+	AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant) error
 }
 
 type RestaurantServiceImplementation struct {
-	logger         *zap.SugaredLogger
-	restaurantRepo database.RestaurantRepository
+	Logger         *zap.SugaredLogger
+	RestaurantRepo database.RestaurantRepository
 }
 
 var (
@@ -24,21 +25,21 @@ var (
 
 func NewRestaurantService(logger *zap.SugaredLogger, restaurantRepo database.RestaurantRepository) RestaurantService {
 	return RestaurantServiceImplementation{
-		logger:         logger,
-		restaurantRepo: restaurantRepo,
+		Logger:         logger,
+		RestaurantRepo: restaurantRepo,
 	}
 }
 
-func (s RestaurantServiceImplementation) GetAllRestaurants() ([]restaurant.Restaurant, error) {
-	restaurants, err := s.restaurantRepo.GetAllRestaurants()
+func (s RestaurantServiceImplementation) GetAllRestaurants(ctx context.Context) ([]restaurant.Restaurant, error) {
+	restaurants, err := s.RestaurantRepo.GetAllRestaurants(ctx)
 	if err != nil {
 		return []restaurant.Restaurant{}, err
 	}
 	return restaurants, nil
 }
 
-func (s RestaurantServiceImplementation) AddRestaurant(restaurantToAdd restaurant.Restaurant) error {
-	existingRestaurant, err := s.restaurantRepo.GetRestaurantByName(restaurantToAdd.Name)
+func (s RestaurantServiceImplementation) AddRestaurant(ctx context.Context, restaurantToAdd restaurant.Restaurant) error {
+	existingRestaurant, err := s.RestaurantRepo.GetRestaurantByName(ctx, restaurantToAdd.Name)
 
 	locationsToAdd := make([]restaurant.Location, 0)
 	if err == nil {
@@ -59,14 +60,14 @@ func (s RestaurantServiceImplementation) AddRestaurant(restaurantToAdd restauran
 			return ErrRestaurantAlreadyExists
 		}
 
-		err = s.restaurantRepo.UpdateRestaurantLocations(*existingRestaurant, locationsToAdd)
+		err = s.RestaurantRepo.UpdateRestaurantLocations(ctx, *existingRestaurant, locationsToAdd)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 
-	err = s.restaurantRepo.AddRestaurant(restaurantToAdd)
+	err = s.RestaurantRepo.AddRestaurant(ctx, restaurantToAdd)
 	if err != nil {
 		return err
 	}

@@ -1,44 +1,48 @@
 package surveyor
 
 import (
+	"context"
+
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
-	"github.com/google/uuid"
+	"github.com/allergeye/surveyor-service/internal/lib"
 	"go.uber.org/zap"
 )
 
 type RestaurantController interface {
-	GetAllRestaurants() ([]restaurant.Restaurant, error)
-	AddRestaurant(requestBody AddRestaurantRequestBody) error
+	GetAllRestaurants(ctx context.Context) ([]restaurant.Restaurant, error)
+	AddRestaurant(ctx context.Context, requestBody AddRestaurantRequestBody) error
 }
 
 type RestaurantControllerImplementation struct {
-	logger            *zap.SugaredLogger
-	restaurantService RestaurantService
+	Logger            *zap.SugaredLogger
+	RestaurantService RestaurantService
+	Helpers           lib.Helpers
 }
 
-func NewRestaurantController(logger *zap.SugaredLogger, restaurantService RestaurantService) RestaurantController {
+func NewRestaurantController(logger *zap.SugaredLogger, restaurantService RestaurantService, helpers lib.Helpers) RestaurantController {
 	return RestaurantControllerImplementation{
-		logger:            logger,
-		restaurantService: restaurantService,
+		Logger:            logger,
+		RestaurantService: restaurantService,
+		Helpers:           helpers,
 	}
 }
 
-func (c RestaurantControllerImplementation) GetAllRestaurants() ([]restaurant.Restaurant, error) {
-	restaurants, err := c.restaurantService.GetAllRestaurants()
+func (c RestaurantControllerImplementation) GetAllRestaurants(ctx context.Context) ([]restaurant.Restaurant, error) {
+	restaurants, err := c.RestaurantService.GetAllRestaurants(ctx)
 	if err != nil {
 		return []restaurant.Restaurant{}, err
 	}
 	return restaurants, nil
 }
 
-func (c RestaurantControllerImplementation) AddRestaurant(requestBody AddRestaurantRequestBody) error {
+func (c RestaurantControllerImplementation) AddRestaurant(ctx context.Context, requestBody AddRestaurantRequestBody) error {
 	restaurant := restaurant.Restaurant{
-		RestaurantId: uuid.New(),
+		RestaurantId: c.Helpers.GenerateUUID(),
 		Name:         requestBody.Name,
 		Locations:    requestBody.Locations,
 	}
 
-	err := c.restaurantService.AddRestaurant(restaurant)
+	err := c.RestaurantService.AddRestaurant(ctx, restaurant)
 	if err != nil {
 		return err
 	}

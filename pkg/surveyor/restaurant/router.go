@@ -27,7 +27,7 @@ func NewRestaurantRouter(logger *zap.SugaredLogger, restaurantController Restaur
 
 func (r RestaurantRouterImplementation) GetAllRestaurants(c *gin.Context) {
 	r.logger.Infow("restaurantRouter.GetAllRestaurants")
-	restaurants, err := r.restaurantController.GetAllRestaurants()
+	restaurants, err := r.restaurantController.GetAllRestaurants(c)
 	if err != nil {
 		r.logger.Errorw("restaurantRouter.GetAllRestaurants", "error", err)
 		c.Status(http.StatusInternalServerError)
@@ -44,11 +44,11 @@ func (r RestaurantRouterImplementation) AddRestaurant(c *gin.Context) {
 	var requestBody AddRestaurantRequestBody
 	if err := c.BindJSON(&requestBody); err != nil {
 		r.logger.Errorw("restaurantRouter.AddRestaurants", "error", err)
-		c.Status(http.StatusInternalServerError)
+		c.Status(http.StatusBadRequest)
 		return
 	}
 
-	err := r.restaurantController.AddRestaurant(requestBody)
+	err := r.restaurantController.AddRestaurant(c, requestBody)
 	if err != nil {
 		r.logger.Errorw("restaurantRouter.AddRestaurants", "error", err)
 		if errors.Is(err, ErrRestaurantAlreadyExists) {
