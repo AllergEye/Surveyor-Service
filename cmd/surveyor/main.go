@@ -6,7 +6,8 @@ import (
 	"net/http"
 
 	"github.com/allergeye/surveyor-service/internal/database"
-	surveyor "github.com/allergeye/surveyor-service/pkg/surveyor/restaurant"
+	surveyor_dish "github.com/allergeye/surveyor-service/pkg/surveyor/dish"
+	surveyor_restaurant "github.com/allergeye/surveyor-service/pkg/surveyor/restaurant"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -35,19 +36,27 @@ func main() {
 		}
 	}()
 
-	marshallers := surveyor.NewMarshallers()
+	marshallers := surveyor_restaurant.NewMarshallers()
 
 	dishRepository := database.NewDishRepository(client)
-
 	restaurantRepository := database.NewRestaurantRepository(client)
-	restaurantService := surveyor.NewRestaurantService(sugar, restaurantRepository, dishRepository)
-	restaurantController := surveyor.NewRestaurantController(sugar, restaurantService, marshallers)
-	restaurantRouter := surveyor.NewRestaurantRouter(sugar, restaurantController)
+
+	dishService := surveyor_dish.NewDishService(sugar, restaurantRepository, dishRepository)
+	dishController := surveyor_dish.NewDishContoller(sugar, dishService)
+	dishRouter := surveyor_dish.NewDishRouter(sugar, dishController)
+
+	restaurantService := surveyor_restaurant.NewRestaurantService(sugar, restaurantRepository, dishRepository)
+	restaurantController := surveyor_restaurant.NewRestaurantController(sugar, restaurantService, marshallers)
+	restaurantRouter := surveyor_restaurant.NewRestaurantRouter(sugar, restaurantController)
 
 	restaurant := r.Group("/restaurant")
 	{
 		restaurant.GET("/", restaurantRouter.GetAllRestaurants)
 		restaurant.POST("/", restaurantRouter.AddRestaurant)
+	}
+	dish := r.Group("/dish")
+	{
+		dish.GET("/:restaurantId", dishRouter.GetDishesByRestaurantId)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

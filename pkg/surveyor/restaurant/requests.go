@@ -1,4 +1,4 @@
-package surveyor
+package surveyor_restaurant
 
 type AddRestaurantRequestBody struct {
 	Name      string

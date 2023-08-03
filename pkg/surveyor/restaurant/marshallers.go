@@ -1,4 +1,4 @@
-package surveyor
+package surveyor_restaurant
 
 import (
 	"github.com/allergeye/surveyor-service/internal/domain/dish"

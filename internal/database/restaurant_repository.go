@@ -13,6 +13,7 @@ import (
 type RestaurantRepository interface {
 	GetAllRestaurants(ctx context.Context) ([]restaurant.Restaurant, error)
 	GetRestaurantByName(ctx context.Context, name string) (*restaurant.Restaurant, error)
+	GetRestaurantById(ctx context.Context, restaurantId string) (*restaurant.Restaurant, error)
 	AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant) error
 	UpdateRestaurantLocations(ctx context.Context, restaurant restaurant.Restaurant, locations []restaurant.Location) error
 }
@@ -52,20 +53,6 @@ func (r RestaurantRepositoryImplementation) GetAllRestaurants(ctx context.Contex
 	return restaurants, nil
 }
 
-func (r RestaurantRepositoryImplementation) AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant) error {
-	model, err := marshalRestaurant(restaurant)
-	if err != nil {
-		return fmt.Errorf("restaurantRepository.AddRestaurant: %w, %v", err, err)
-	}
-	coll := r.client.Database("allergeye").Collection("restaurants")
-	_, err = coll.InsertOne(ctx, model)
-	if err != nil {
-		return fmt.Errorf("restaurantRepository.AddRestaurant: %w, %v", err, err)
-	}
-
-	return nil
-}
-
 func (r RestaurantRepositoryImplementation) GetRestaurantByName(ctx context.Context, name string) (*restaurant.Restaurant, error) {
 	var result RestaurantModel
 
@@ -83,6 +70,39 @@ func (r RestaurantRepositoryImplementation) GetRestaurantByName(ctx context.Cont
 	}
 
 	return restaurant, nil
+}
+
+func (r RestaurantRepositoryImplementation) GetRestaurantById(ctx context.Context, restaurantId string) (*restaurant.Restaurant, error) {
+	var result RestaurantModel
+
+	coll := r.client.Database("allergeye").Collection("restaurants")
+	filter := bson.D{{"restaurant_id", restaurantId}}
+
+	err := coll.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		return nil, fmt.Errorf("restaurantRepository.GetRestaurantById: %w, %v", err, err)
+	}
+
+	restaurant, err := unmarshalRestaurant(&result)
+	if err != nil {
+		return nil, fmt.Errorf("restaurantRepository.GetRestaurantById: %w, %v", err, err)
+	}
+
+	return restaurant, nil
+}
+
+func (r RestaurantRepositoryImplementation) AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant) error {
+	model, err := marshalRestaurant(restaurant)
+	if err != nil {
+		return fmt.Errorf("restaurantRepository.AddRestaurant: %w, %v", err, err)
+	}
+	coll := r.client.Database("allergeye").Collection("restaurants")
+	_, err = coll.InsertOne(ctx, model)
+	if err != nil {
+		return fmt.Errorf("restaurantRepository.AddRestaurant: %w, %v", err, err)
+	}
+
+	return nil
 }
 
 func (r RestaurantRepositoryImplementation) UpdateRestaurantLocations(ctx context.Context, restaurant restaurant.Restaurant, locations []restaurant.Location) error {

@@ -1,4 +1,4 @@
-package surveyor_test
+package surveyor_restaurant_test
 
 import (
 	"context"

@@ -51,6 +51,37 @@ func unmarshalLocations(locations []LocationModel) ([]restaurant.Location, error
 	return unmarshalledLocations, nil
 }
 
+func unmarshalDish(dm *DishModel) (*dish.Dish, error) {
+	dishId, err := uuid.Parse(dm.DishId)
+	if err != nil {
+		return nil, err
+	}
+
+	allergens, err := unmarshalAllergens(dm.Allergens)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dish.Dish{
+		DishId:    dishId,
+		Name:      dm.Name,
+		Allergens: allergens,
+	}, nil
+}
+
+func unmarshalAllergens(allergens []AllergenModel) ([]dish.Allergen, error) {
+	unmarshalledAllergens := make([]dish.Allergen, len(allergens))
+	for i, allergen := range allergens {
+		a := dish.Allergen{
+			Name:        string(allergen.Name),
+			Probability: allergen.Probability,
+		}
+		unmarshalledAllergens[i] = a
+	}
+
+	return unmarshalledAllergens, nil
+}
+
 func marshalRestaurant(restaurant restaurant.Restaurant) (*RestaurantModel, error) {
 	locations, err := marshalLocations(restaurant.Locations)
 	if err != nil {

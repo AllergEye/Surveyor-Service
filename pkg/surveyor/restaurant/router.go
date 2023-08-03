@@ -1,4 +1,4 @@
-package surveyor
+package surveyor_restaurant
 
 import (
 	"errors"
