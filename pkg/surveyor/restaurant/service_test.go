@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/allergeye/surveyor-service/internal/domain/dish"
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	mock_database "github.com/allergeye/surveyor-service/pkg/surveyor/mocks/database"
 	. "github.com/allergeye/surveyor-service/pkg/surveyor/restaurant"
@@ -18,6 +19,7 @@ import (
 type serviceMock struct {
 	logger         *zap.SugaredLogger
 	restaurantRepo *mock_database.MockRestaurantRepository
+	dishRepo       *mock_database.MockDishRepository
 }
 
 func newServiceMock(t *testing.T) serviceMock {
@@ -25,10 +27,12 @@ func newServiceMock(t *testing.T) serviceMock {
 	logger, _ := zap.NewProduction()
 	sugar := logger.Sugar()
 	restaurantRepo := mock_database.NewMockRestaurantRepository(ctrl)
+	dishRepo := mock_database.NewMockDishRepository(ctrl)
 
 	return serviceMock{
 		logger:         sugar,
 		restaurantRepo: restaurantRepo,
+		dishRepo:       dishRepo,
 	}
 }
 
@@ -36,6 +40,7 @@ func newFakeService(sm serviceMock) RestaurantServiceImplementation {
 	return RestaurantServiceImplementation{
 		Logger:         sm.logger,
 		RestaurantRepo: sm.restaurantRepo,
+		DishRepo:       sm.dishRepo,
 	}
 }
 
@@ -108,7 +113,7 @@ func Test_Service_AddRestaurant(t *testing.T) {
 	restaurantName := "Restaurant1"
 
 	restaurantToAdd := restaurant.Restaurant{
-		RestaurantId: uuid.MustParse("52fdfc08-2182-454f-963f-5f0f9a621d72"),
+		RestaurantId: uuid.MustParse("52fdfc07-2182-454f-963f-5f0f9a621d72"),
 		Name:         "Restaurant1",
 		Locations: []restaurant.Location{
 			{
@@ -120,7 +125,9 @@ func Test_Service_AddRestaurant(t *testing.T) {
 				PostalCode:         "PostalCode",
 			},
 		},
+		DishIds: []uuid.UUID{uuid.New(), uuid.New()},
 	}
+
 	newLocations := []restaurant.Location{
 		{
 			StreetAddressLine1: "Restaurant1 Street",
@@ -139,6 +146,7 @@ func Test_Service_AddRestaurant(t *testing.T) {
 			PostalCode:         "PostalCode",
 		},
 	}
+
 	existingRestaurant1 := restaurant.Restaurant{
 		RestaurantId: uuid.MustParse("52fdfc07-2182-454f-963f-5f0f9a621d72"),
 		Name:         "Restaurant1",
@@ -150,6 +158,36 @@ func Test_Service_AddRestaurant(t *testing.T) {
 				Province:           "Province",
 				Country:            "Country",
 				PostalCode:         "PostalCode",
+			},
+		},
+		DishIds: []uuid.UUID{uuid.New(), uuid.New()},
+	}
+
+	dishesToAdd := []dish.Dish{
+		{
+			Name: "Dish 1",
+			Allergens: []dish.Allergen{
+				{
+					Name:        "SESAME",
+					Probability: 100,
+				},
+				{
+					Name:        "PEANUTS",
+					Probability: 100,
+				},
+			},
+		},
+		{
+			Name: "Dish 2",
+			Allergens: []dish.Allergen{
+				{
+					Name:        "EGGS",
+					Probability: 100,
+				},
+				{
+					Name:        "MILK",
+					Probability: 100,
+				},
 			},
 		},
 	}
@@ -164,6 +202,7 @@ func Test_Service_AddRestaurant(t *testing.T) {
 			mocks: func() serviceMock {
 				sm := newServiceMock(t)
 				sm.restaurantRepo.EXPECT().GetRestaurantByName(gomock.Any(), restaurantName).Return(nil, mongo.ErrNoDocuments)
+				sm.dishRepo.EXPECT().AddDishes(gomock.Any(), dishesToAdd).Return(nil)
 				sm.restaurantRepo.EXPECT().AddRestaurant(gomock.Any(), restaurantToAdd).Return(nil)
 				return sm
 			},
@@ -197,6 +236,7 @@ func Test_Service_AddRestaurant(t *testing.T) {
 			mocks: func() serviceMock {
 				sm := newServiceMock(t)
 				sm.restaurantRepo.EXPECT().GetRestaurantByName(gomock.Any(), restaurantName).Return(nil, mongo.ErrNoDocuments)
+				sm.dishRepo.EXPECT().AddDishes(gomock.Any(), dishesToAdd).Return(nil)
 				sm.restaurantRepo.EXPECT().AddRestaurant(gomock.Any(), restaurantToAdd).Return(randomErr)
 				return sm
 			},
@@ -210,7 +250,7 @@ func Test_Service_AddRestaurant(t *testing.T) {
 			s := newFakeService(sm)
 			ctx := context.Background()
 
-			err := s.AddRestaurant(ctx, restaurantToAdd)
+			err := s.AddRestaurant(ctx, restaurantToAdd, dishesToAdd)
 			assert.Equal(t, tt.expectedErr, err)
 		})
 	}

@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/allergeye/surveyor-service/internal/database"
-	"github.com/allergeye/surveyor-service/internal/lib"
 	surveyor "github.com/allergeye/surveyor-service/pkg/surveyor/restaurant"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,13 +35,13 @@ func main() {
 		}
 	}()
 
-	helpers := lib.NewHelpers()
+	marshallers := surveyor.NewMarshallers()
 
 	dishRepository := database.NewDishRepository(client)
 
 	restaurantRepository := database.NewRestaurantRepository(client)
 	restaurantService := surveyor.NewRestaurantService(sugar, restaurantRepository, dishRepository)
-	restaurantController := surveyor.NewRestaurantController(sugar, restaurantService, helpers)
+	restaurantController := surveyor.NewRestaurantController(sugar, restaurantService, marshallers)
 	restaurantRouter := surveyor.NewRestaurantRouter(sugar, restaurantController)
 
 	restaurant := r.Group("/restaurant")

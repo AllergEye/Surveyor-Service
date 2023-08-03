@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
-	"github.com/allergeye/surveyor-service/internal/lib"
 	"go.uber.org/zap"
 )
 
@@ -21,14 +20,14 @@ type RestaurantController interface {
 type RestaurantControllerImplementation struct {
 	Logger            *zap.SugaredLogger
 	RestaurantService RestaurantService
-	Helpers           lib.Helpers
+	Marshallers       Marshallers
 }
 
-func NewRestaurantController(logger *zap.SugaredLogger, restaurantService RestaurantService, helpers lib.Helpers) RestaurantController {
+func NewRestaurantController(logger *zap.SugaredLogger, restaurantService RestaurantService, marshallers Marshallers) RestaurantController {
 	return RestaurantControllerImplementation{
 		Logger:            logger,
 		RestaurantService: restaurantService,
-		Helpers:           helpers,
+		Marshallers:       marshallers,
 	}
 }
 
@@ -41,7 +40,7 @@ func (c RestaurantControllerImplementation) GetAllRestaurants(ctx context.Contex
 }
 
 func (c RestaurantControllerImplementation) AddRestaurant(ctx context.Context, requestBody AddRestaurantRequestBody) error {
-	restaurant, dishes, err := marshalRestaurantRequestBody(requestBody)
+	restaurant, dishes, err := c.Marshallers.MarshalRestaurantRequestBody(requestBody)
 	if err != nil {
 		return err
 	}

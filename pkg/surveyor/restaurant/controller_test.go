@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/allergeye/surveyor-service/internal/domain/dish"
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
-	mock_lib "github.com/allergeye/surveyor-service/pkg/surveyor/mocks/lib"
 	mock_surveyor "github.com/allergeye/surveyor-service/pkg/surveyor/mocks/restaurant"
 	. "github.com/allergeye/surveyor-service/pkg/surveyor/restaurant"
 	"github.com/google/uuid"
@@ -18,7 +18,7 @@ import (
 type controllerMock struct {
 	logger            *zap.SugaredLogger
 	restaurantService *mock_surveyor.MockRestaurantService
-	helpers           *mock_lib.MockHelpers
+	marshallers       *mock_surveyor.MockMarshallers
 }
 
 func newControllerMock(t *testing.T) controllerMock {
@@ -26,11 +26,11 @@ func newControllerMock(t *testing.T) controllerMock {
 	logger, _ := zap.NewProduction()
 	sugar := logger.Sugar()
 	restaurantService := mock_surveyor.NewMockRestaurantService(ctrl)
-	helpers := mock_lib.NewMockHelpers(ctrl)
+	marshallers := mock_surveyor.NewMockMarshallers(ctrl)
 	return controllerMock{
 		logger:            sugar,
 		restaurantService: restaurantService,
-		helpers:           helpers,
+		marshallers:       marshallers,
 	}
 }
 
@@ -38,7 +38,7 @@ func newFakeController(cm controllerMock) RestaurantControllerImplementation {
 	return RestaurantControllerImplementation{
 		Logger:            cm.logger,
 		RestaurantService: cm.restaurantService,
-		Helpers:           cm.helpers,
+		Marshallers:       cm.marshallers,
 	}
 }
 
@@ -108,6 +108,85 @@ func Test_Controller_GetAllRestaurants(t *testing.T) {
 }
 
 func Test_Controller_AddRestaurant(t *testing.T) {
+	restaurantRequest := AddRestaurantRequestBody{
+		Name: "Restaurant1",
+		Locations: []AddRestaurantLocationRequestBody{
+			{
+				StreetAddressLine1: "Restaurant1 Street",
+				StreetAddressLine2: "",
+				City:               "City",
+				Province:           "Province",
+				Country:            "Country",
+				PostalCode:         "PostalCode",
+			},
+			{
+				StreetAddressLine1: "Restaurant2 Street",
+				StreetAddressLine2: "",
+				City:               "City",
+				Province:           "Province",
+				Country:            "Country",
+				PostalCode:         "PostalCode",
+			},
+		},
+		Dishes: []AddRestaurantDishRequestBody{
+			{
+				Name: "Dish 1",
+				Allergens: []AddRestaurantDishAllergenRequestBody{
+					{
+						Name:        "SESAME",
+						Probability: 100,
+					},
+					{
+						Name:        "PEANUTS",
+						Probability: 100,
+					},
+				},
+			},
+			{
+				Name: "Dish 2",
+				Allergens: []AddRestaurantDishAllergenRequestBody{
+					{
+						Name:        "EGGS",
+						Probability: 100,
+					},
+					{
+						Name:        "MILK",
+						Probability: 100,
+					},
+				},
+			},
+		},
+	}
+
+	expectedDishes := []dish.Dish{
+		{
+			Name: "Dish 1",
+			Allergens: []dish.Allergen{
+				{
+					Name:        "SESAME",
+					Probability: 100,
+				},
+				{
+					Name:        "PEANUTS",
+					Probability: 100,
+				},
+			},
+		},
+		{
+			Name: "Dish 2",
+			Allergens: []dish.Allergen{
+				{
+					Name:        "EGGS",
+					Probability: 100,
+				},
+				{
+					Name:        "MILK",
+					Probability: 100,
+				},
+			},
+		},
+	}
+
 	expectedRestaurant := restaurant.Restaurant{
 		RestaurantId: uuid.MustParse("52fdfc07-2182-454f-963f-5f0f9a621d72"),
 		Name:         "Restaurant1",
@@ -121,6 +200,7 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 				PostalCode:         "PostalCode",
 			},
 		},
+		DishIds: []uuid.UUID{uuid.New(), uuid.New()},
 	}
 
 	randomErr := errors.New("random error")
@@ -132,16 +212,16 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 		"successfully adds a restaurant": {
 			mocks: func() controllerMock {
 				cm := newControllerMock(t)
-				cm.helpers.EXPECT().GenerateUUID().Return(uuid.MustParse("52fdfc07-2182-454f-963f-5f0f9a621d72"))
-				cm.restaurantService.EXPECT().AddRestaurant(gomock.Any(), expectedRestaurant).Return(nil)
+				cm.marshallers.EXPECT().MarshalRestaurantRequestBody(restaurantRequest).Return(&expectedRestaurant, expectedDishes, nil)
+				cm.restaurantService.EXPECT().AddRestaurant(gomock.Any(), expectedRestaurant, expectedDishes).Return(nil)
 				return cm
 			},
 		},
 		"returns an error if the restaurant could not be added": {
 			mocks: func() controllerMock {
 				cm := newControllerMock(t)
-				cm.helpers.EXPECT().GenerateUUID().Return(uuid.MustParse("52fdfc07-2182-454f-963f-5f0f9a621d72"))
-				cm.restaurantService.EXPECT().AddRestaurant(gomock.Any(), expectedRestaurant).Return(randomErr)
+				cm.marshallers.EXPECT().MarshalRestaurantRequestBody(restaurantRequest).Return(&expectedRestaurant, expectedDishes, nil)
+				cm.restaurantService.EXPECT().AddRestaurant(gomock.Any(), expectedRestaurant, expectedDishes).Return(randomErr)
 				return cm
 			},
 			expectedErr: randomErr,
@@ -153,19 +233,6 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 			cm := tt.mocks()
 			c := newFakeController(cm)
 			ctx := context.Background()
-			restaurantRequest := AddRestaurantRequestBody{
-				Name: "Restaurant1",
-				Locations: []restaurant.Location{
-					{
-						StreetAddressLine1: "Restaurant1 Street",
-						StreetAddressLine2: "",
-						City:               "City",
-						Province:           "Province",
-						Country:            "Country",
-						PostalCode:         "PostalCode",
-					},
-				},
-			}
 
 			err := c.AddRestaurant(ctx, restaurantRequest)
 			assert.Equal(t, tt.expectedErr, err)
