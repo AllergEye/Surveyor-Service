@@ -2,10 +2,15 @@ package surveyor
 
 import (
 	"context"
+	"errors"
 
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	"github.com/allergeye/surveyor-service/internal/lib"
 	"go.uber.org/zap"
+)
+
+var (
+	ErrInvalidAllergen = errors.New("invalid allergen")
 )
 
 type RestaurantController interface {
@@ -36,13 +41,12 @@ func (c RestaurantControllerImplementation) GetAllRestaurants(ctx context.Contex
 }
 
 func (c RestaurantControllerImplementation) AddRestaurant(ctx context.Context, requestBody AddRestaurantRequestBody) error {
-	restaurant := restaurant.Restaurant{
-		RestaurantId: c.Helpers.GenerateUUID(),
-		Name:         requestBody.Name,
-		Locations:    requestBody.Locations,
+	restaurant, dishes, err := marshalRestaurantRequestBody(requestBody)
+	if err != nil {
+		return err
 	}
 
-	err := c.RestaurantService.AddRestaurant(ctx, restaurant)
+	err = c.RestaurantService.AddRestaurant(ctx, *restaurant, dishes)
 	if err != nil {
 		return err
 	}

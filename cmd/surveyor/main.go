@@ -38,8 +38,10 @@ func main() {
 
 	helpers := lib.NewHelpers()
 
+	dishRepository := database.NewDishRepository(client)
+
 	restaurantRepository := database.NewRestaurantRepository(client)
-	restaurantService := surveyor.NewRestaurantService(sugar, restaurantRepository)
+	restaurantService := surveyor.NewRestaurantService(sugar, restaurantRepository, dishRepository)
 	restaurantController := surveyor.NewRestaurantController(sugar, restaurantService, helpers)
 	restaurantRouter := surveyor.NewRestaurantRouter(sugar, restaurantController)
 

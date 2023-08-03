@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	dish "github.com/allergeye/surveyor-service/internal/domain/dish"
 	restaurant "github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -36,17 +37,17 @@ func (m *MockRestaurantService) EXPECT() *MockRestaurantServiceMockRecorder {
 }
 
 // AddRestaurant mocks base method.
-func (m *MockRestaurantService) AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant) error {
+func (m *MockRestaurantService) AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant, dishesToAdd []dish.Dish) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddRestaurant", ctx, restaurant)
+	ret := m.ctrl.Call(m, "AddRestaurant", ctx, restaurant, dishesToAdd)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddRestaurant indicates an expected call of AddRestaurant.
-func (mr *MockRestaurantServiceMockRecorder) AddRestaurant(ctx, restaurant interface{}) *gomock.Call {
+func (mr *MockRestaurantServiceMockRecorder) AddRestaurant(ctx, restaurant, dishesToAdd interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRestaurant", reflect.TypeOf((*MockRestaurantService)(nil).AddRestaurant), ctx, restaurant)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRestaurant", reflect.TypeOf((*MockRestaurantService)(nil).AddRestaurant), ctx, restaurant, dishesToAdd)
 }
 
 // GetAllRestaurants mocks base method.

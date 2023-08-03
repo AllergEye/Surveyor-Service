@@ -5,28 +5,31 @@ import (
 	"errors"
 
 	"github.com/allergeye/surveyor-service/internal/database"
+	"github.com/allergeye/surveyor-service/internal/domain/dish"
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	"go.uber.org/zap"
 )
 
 type RestaurantService interface {
 	GetAllRestaurants(ctx context.Context) ([]restaurant.Restaurant, error)
-	AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant) error
+	AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant, dishesToAdd []dish.Dish) error
 }
 
 type RestaurantServiceImplementation struct {
 	Logger         *zap.SugaredLogger
 	RestaurantRepo database.RestaurantRepository
+	DishRepo       database.DishRepository
 }
 
 var (
 	ErrRestaurantAlreadyExists = errors.New("a restaurant with that name already exists")
 )
 
-func NewRestaurantService(logger *zap.SugaredLogger, restaurantRepo database.RestaurantRepository) RestaurantService {
+func NewRestaurantService(logger *zap.SugaredLogger, restaurantRepo database.RestaurantRepository, dishRepo database.DishRepository) RestaurantService {
 	return RestaurantServiceImplementation{
 		Logger:         logger,
 		RestaurantRepo: restaurantRepo,
+		DishRepo:       dishRepo,
 	}
 }
 
@@ -38,7 +41,7 @@ func (s RestaurantServiceImplementation) GetAllRestaurants(ctx context.Context) 
 	return restaurants, nil
 }
 
-func (s RestaurantServiceImplementation) AddRestaurant(ctx context.Context, restaurantToAdd restaurant.Restaurant) error {
+func (s RestaurantServiceImplementation) AddRestaurant(ctx context.Context, restaurantToAdd restaurant.Restaurant, dishesToAdd []dish.Dish) error {
 	existingRestaurant, err := s.RestaurantRepo.GetRestaurantByName(ctx, restaurantToAdd.Name)
 
 	locationsToAdd := make([]restaurant.Location, 0)
@@ -67,6 +70,10 @@ func (s RestaurantServiceImplementation) AddRestaurant(ctx context.Context, rest
 		return nil
 	}
 
+	err = s.DishRepo.AddDishes(ctx, dishesToAdd)
+	if err != nil {
+		return err
+	}
 	err = s.RestaurantRepo.AddRestaurant(ctx, restaurantToAdd)
 	if err != nil {
 		return err

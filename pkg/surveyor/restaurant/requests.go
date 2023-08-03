@@ -1,8 +1,26 @@
 package surveyor
 
-import "github.com/allergeye/surveyor-service/internal/domain/restaurant"
-
 type AddRestaurantRequestBody struct {
 	Name      string
-	Locations []restaurant.Location
+	Locations []AddRestaurantLocationRequestBody
+	Dishes    []AddRestaurantDishRequestBody
+}
+
+type AddRestaurantLocationRequestBody struct {
+	StreetAddressLine1 string
+	StreetAddressLine2 string
+	City               string
+	Province           string
+	Country            string
+	PostalCode         string
+}
+
+type AddRestaurantDishRequestBody struct {
+	Name      string
+	Allergens []AddRestaurantDishAllergenRequestBody
+}
+
+type AddRestaurantDishAllergenRequestBody struct {
+	Name        string
+	Probability int
 }
