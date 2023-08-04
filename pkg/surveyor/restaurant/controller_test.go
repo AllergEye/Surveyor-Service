@@ -42,6 +42,21 @@ func newFakeController(cm controllerMock) RestaurantControllerImplementation {
 	}
 }
 
+func Test_Controller_NewRestaruantController(t *testing.T) {
+	t.Run("returns a new service with expected values", func(t *testing.T) {
+		cm := newControllerMock(t)
+
+		expectedController := RestaurantControllerImplementation{
+			Logger:            cm.logger,
+			RestaurantService: cm.restaurantService,
+			Marshallers:       cm.marshallers,
+		}
+
+		newController := NewRestaurantController(cm.logger, cm.restaurantService, cm.marshallers)
+		assert.Equal(t, expectedController, newController)
+	})
+}
+
 func Test_Controller_GetAllRestaurants(t *testing.T) {
 	restaurants := []restaurant.Restaurant{
 		{
@@ -137,7 +152,7 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 						Probability: 100,
 					},
 					{
-						Name:        "PEANUTS",
+						Name:        "PEANUT",
 						Probability: 100,
 					},
 				},
@@ -167,7 +182,7 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 					Probability: 100,
 				},
 				{
-					Name:        "PEANUTS",
+					Name:        "PEANUT",
 					Probability: 100,
 				},
 			},
@@ -216,6 +231,14 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 				cm.restaurantService.EXPECT().AddRestaurant(gomock.Any(), expectedRestaurant, expectedDishes).Return(nil)
 				return cm
 			},
+		},
+		"returns an error if the request body could not be marshalled": {
+			mocks: func() controllerMock {
+				cm := newControllerMock(t)
+				cm.marshallers.EXPECT().MarshalRestaurantRequestBody(restaurantRequest).Return(nil, []dish.Dish{}, randomErr)
+				return cm
+			},
+			expectedErr: randomErr,
 		},
 		"returns an error if the restaurant could not be added": {
 			mocks: func() controllerMock {

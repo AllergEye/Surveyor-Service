@@ -48,3 +48,18 @@ func (mr *MockDishRepositoryMockRecorder) AddDishes(ctx, dishes interface{}) *go
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDishes", reflect.TypeOf((*MockDishRepository)(nil).AddDishes), ctx, dishes)
 }
+
+// GetDishById mocks base method.
+func (m *MockDishRepository) GetDishById(ctx context.Context, dishId string) (*dish.Dish, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDishById", ctx, dishId)
+	ret0, _ := ret[0].(*dish.Dish)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDishById indicates an expected call of GetDishById.
+func (mr *MockDishRepositoryMockRecorder) GetDishById(ctx, dishId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDishById", reflect.TypeOf((*MockDishRepository)(nil).GetDishById), ctx, dishId)
+}

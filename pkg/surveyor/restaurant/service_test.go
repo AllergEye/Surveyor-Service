@@ -44,6 +44,21 @@ func newFakeService(sm serviceMock) RestaurantServiceImplementation {
 	}
 }
 
+func Test_Service_NewRestaruantService(t *testing.T) {
+	t.Run("returns a new service with expected values", func(t *testing.T) {
+		sm := newServiceMock(t)
+
+		expectedService := RestaurantServiceImplementation{
+			Logger:         sm.logger,
+			RestaurantRepo: sm.restaurantRepo,
+			DishRepo:       sm.dishRepo,
+		}
+
+		newService := NewRestaurantService(sm.logger, sm.restaurantRepo, sm.dishRepo)
+		assert.Equal(t, expectedService, newService)
+	})
+}
+
 func Test_Service_GetAllRestaurants(t *testing.T) {
 	restaurants := []restaurant.Restaurant{
 		{
@@ -172,7 +187,7 @@ func Test_Service_AddRestaurant(t *testing.T) {
 					Probability: 100,
 				},
 				{
-					Name:        "PEANUTS",
+					Name:        "PEANUT",
 					Probability: 100,
 				},
 			},
@@ -231,6 +246,15 @@ func Test_Service_AddRestaurant(t *testing.T) {
 				return sm
 			},
 			expectedErr: ErrRestaurantAlreadyExists,
+		},
+		"returns an error if dishes could not be added": {
+			mocks: func() serviceMock {
+				sm := newServiceMock(t)
+				sm.restaurantRepo.EXPECT().GetRestaurantByName(gomock.Any(), restaurantName).Return(nil, mongo.ErrNoDocuments)
+				sm.dishRepo.EXPECT().AddDishes(gomock.Any(), dishesToAdd).Return(randomErr)
+				return sm
+			},
+			expectedErr: randomErr,
 		},
 		"returns an error if a new restaurant could not be added": {
 			mocks: func() serviceMock {

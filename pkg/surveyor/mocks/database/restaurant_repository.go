@@ -64,6 +64,21 @@ func (mr *MockRestaurantRepositoryMockRecorder) GetAllRestaurants(ctx interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllRestaurants", reflect.TypeOf((*MockRestaurantRepository)(nil).GetAllRestaurants), ctx)
 }
 
+// GetRestaurantById mocks base method.
+func (m *MockRestaurantRepository) GetRestaurantById(ctx context.Context, restaurantId string) (*restaurant.Restaurant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRestaurantById", ctx, restaurantId)
+	ret0, _ := ret[0].(*restaurant.Restaurant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRestaurantById indicates an expected call of GetRestaurantById.
+func (mr *MockRestaurantRepositoryMockRecorder) GetRestaurantById(ctx, restaurantId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurantById", reflect.TypeOf((*MockRestaurantRepository)(nil).GetRestaurantById), ctx, restaurantId)
+}
+
 // GetRestaurantByName mocks base method.
 func (m *MockRestaurantRepository) GetRestaurantByName(ctx context.Context, name string) (*restaurant.Restaurant, error) {
 	m.ctrl.T.Helper()
