@@ -15,6 +15,7 @@ type RestaurantRepository interface {
 	GetRestaurantByName(ctx context.Context, name string) (*restaurant.Restaurant, error)
 	GetRestaurantById(ctx context.Context, restaurantId string) (*restaurant.Restaurant, error)
 	AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant) error
+	AddDishesToRestaurant(ctx context.Context, restaurantId string, dishIds []string) error
 	UpdateRestaurantLocations(ctx context.Context, restaurant restaurant.Restaurant, locations []restaurant.Location) error
 }
 
@@ -100,6 +101,22 @@ func (r RestaurantRepositoryImplementation) AddRestaurant(ctx context.Context, r
 	_, err = coll.InsertOne(ctx, model)
 	if err != nil {
 		return fmt.Errorf("restaurantRepository.AddRestaurant: %w, %v", err, err)
+	}
+
+	return nil
+}
+
+func (r RestaurantRepositoryImplementation) AddDishesToRestaurant(ctx context.Context, restaurantId string, dishIds []string) error {
+	coll := r.client.Database("allergeye").Collection("restaurants")
+
+	filter := bson.D{{"restaurant_id", restaurantId}}
+	change := bson.M{"$push": bson.M{"dish_ids": bson.M{"$each": dishIds}}}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	var updatedRestaurant RestaurantModel
+	err := coll.FindOneAndUpdate(ctx, filter, change, opts).Decode(&updatedRestaurant)
+	if err != nil {
+		return fmt.Errorf("restaurantRepository.AddDishesToRestaurant: %w, %v", err, err)
 	}
 
 	return nil

@@ -21,6 +21,7 @@ type AddRestaurantDishRequestBody struct {
 }
 
 type AddRestaurantDishAllergenRequestBody struct {
-	Name        string
-	Probability int
+	Name               string
+	IsProbabilityKnown bool
+	Probability        int
 }

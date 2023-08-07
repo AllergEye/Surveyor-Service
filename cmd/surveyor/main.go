@@ -36,17 +36,18 @@ func main() {
 		}
 	}()
 
-	marshallers := surveyor_restaurant.NewMarshallers()
+	restaurantMarshallers := surveyor_restaurant.NewMarshallers()
+	dishMarshallers := surveyor_dish.NewMarshallers()
 
 	dishRepository := database.NewDishRepository(client)
 	restaurantRepository := database.NewRestaurantRepository(client)
 
 	dishService := surveyor_dish.NewDishService(sugar, restaurantRepository, dishRepository)
-	dishController := surveyor_dish.NewDishContoller(sugar, dishService)
+	dishController := surveyor_dish.NewDishContoller(sugar, dishService, dishMarshallers)
 	dishRouter := surveyor_dish.NewDishRouter(sugar, dishController)
 
 	restaurantService := surveyor_restaurant.NewRestaurantService(sugar, restaurantRepository, dishRepository)
-	restaurantController := surveyor_restaurant.NewRestaurantController(sugar, restaurantService, marshallers)
+	restaurantController := surveyor_restaurant.NewRestaurantController(sugar, restaurantService, restaurantMarshallers)
 	restaurantRouter := surveyor_restaurant.NewRestaurantRouter(sugar, restaurantController)
 
 	restaurant := r.Group("/restaurant")
@@ -57,6 +58,7 @@ func main() {
 	dish := r.Group("/dish")
 	{
 		dish.GET("/:restaurantId", dishRouter.GetDishesByRestaurantId)
+		dish.POST("/", dishRouter.AddDishesToRestaurant)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {

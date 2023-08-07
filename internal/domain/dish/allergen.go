@@ -11,18 +11,20 @@ const (
 )
 
 type Allergen struct {
-	Name        string
-	Probability int
+	Name               string
+	IsProbabilityKnown bool
+	Probability        int
 }
 
-func NewAllergen(name string) Allergen {
+func NewAllergen(name string, isProbabilityKnown bool, probability int) Allergen {
 	return Allergen{
-		Name:        strings.ToUpper(name),
-		Probability: 100,
+		Name:               strings.ToUpper(name),
+		IsProbabilityKnown: isProbabilityKnown,
+		Probability:        probability,
 	}
 }
 
-func IsValidAllergen(name string) bool {
+func IsValidAllergenName(name string) bool {
 	str := strings.ToUpper(name)
 	switch str {
 	case PEANUTS, TREE_NUTS, SESAME, MILK, EGGS:

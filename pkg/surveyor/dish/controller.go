@@ -14,17 +14,20 @@ var (
 
 type DishController interface {
 	GetDishesByRestaurantId(c *gin.Context) ([]dish.Dish, error)
+	AddDishesToRestaurant(c *gin.Context, requestBody AddDishesToRestaurantRequestBody) error
 }
 
 type DishControllerImplementation struct {
 	Logger      *zap.SugaredLogger
 	DishService DishService
+	Marshallers Marshallers
 }
 
-func NewDishContoller(logger *zap.SugaredLogger, dishService DishService) DishController {
+func NewDishContoller(logger *zap.SugaredLogger, dishService DishService, marshallers Marshallers) DishController {
 	return DishControllerImplementation{
 		Logger:      logger,
 		DishService: dishService,
+		Marshallers: marshallers,
 	}
 }
 
@@ -39,4 +42,17 @@ func (dc DishControllerImplementation) GetDishesByRestaurantId(c *gin.Context) (
 		return []dish.Dish{}, err
 	}
 	return dishes, nil
+}
+
+func (dc DishControllerImplementation) AddDishesToRestaurant(c *gin.Context, requestBody AddDishesToRestaurantRequestBody) error {
+	restaurantId, dishes, err := dc.Marshallers.MarshalAddDishesToRestaurantRequestBody(requestBody)
+	if err != nil {
+		return err
+	}
+
+	err = dc.DishService.AddDishesToRestaurant(c, restaurantId, dishes)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -35,6 +35,20 @@ func (m *MockRestaurantRepository) EXPECT() *MockRestaurantRepositoryMockRecorde
 	return m.recorder
 }
 
+// AddDishesToRestaurant mocks base method.
+func (m *MockRestaurantRepository) AddDishesToRestaurant(ctx context.Context, restaurantId string, dishIds []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddDishesToRestaurant", ctx, restaurantId, dishIds)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddDishesToRestaurant indicates an expected call of AddDishesToRestaurant.
+func (mr *MockRestaurantRepositoryMockRecorder) AddDishesToRestaurant(ctx, restaurantId, dishIds interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDishesToRestaurant", reflect.TypeOf((*MockRestaurantRepository)(nil).AddDishesToRestaurant), ctx, restaurantId, dishIds)
+}
+
 // AddRestaurant mocks base method.
 func (m *MockRestaurantRepository) AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant) error {
 	m.ctrl.T.Helper()

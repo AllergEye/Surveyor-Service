@@ -65,10 +65,10 @@ func (m MarshallersImplementation) MarshalRestaurantDishRequestBody(dishesReques
 func (m MarshallersImplementation) MarshalRestaurantDishAllergenRequestBody(allergensRequestBody []AddRestaurantDishAllergenRequestBody) ([]dish.Allergen, error) {
 	allergens := make([]dish.Allergen, len(allergensRequestBody))
 	for i, allergenRequest := range allergensRequestBody {
-		if !dish.IsValidAllergen(allergenRequest.Name) {
+		if !dish.IsValidAllergenName(allergenRequest.Name) {
 			return []dish.Allergen{}, ErrInvalidAllergen
 		}
-		allergen := dish.NewAllergen(allergenRequest.Name)
+		allergen := dish.NewAllergen(allergenRequest.Name, allergenRequest.IsProbabilityKnown, allergenRequest.Probability)
 		allergens[i] = allergen
 	}
 

@@ -10,6 +10,7 @@ import (
 
 type DishService interface {
 	GetDishesByRestaurantId(ctx context.Context, restaurantId string) ([]dish.Dish, error)
+	AddDishesToRestaurant(ctx context.Context, restaurantId string, dishes []dish.Dish) error
 }
 
 type DishServiceImplementation struct {
@@ -40,4 +41,23 @@ func (ds DishServiceImplementation) GetDishesByRestaurantId(ctx context.Context,
 		dishes[i] = *dishToRetrieve
 	}
 	return dishes, nil
+}
+
+func (ds DishServiceImplementation) AddDishesToRestaurant(ctx context.Context, restaurantId string, dishes []dish.Dish) error {
+	dishIds := make([]string, len(dishes))
+	for i, dish := range dishes {
+		dishIds[i] = dish.DishId.String()
+	}
+
+	err := ds.RestaurantRepo.AddDishesToRestaurant(ctx, restaurantId, dishIds)
+	if err != nil {
+		return err
+	}
+
+	err = ds.DishRepo.AddDishes(ctx, dishes)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
