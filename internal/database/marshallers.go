@@ -3,32 +3,18 @@ package database
 import (
 	"github.com/allergeye/surveyor-service/internal/domain/dish"
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func unmarshalRestaurant(rm *RestaurantModel) (*restaurant.Restaurant, error) {
-	restaurantId, err := uuid.Parse(rm.RestaurantId)
-	if err != nil {
-		return nil, err
-	}
-	dishIds := make([]uuid.UUID, len(rm.DishIds))
-	for i, dishId := range rm.DishIds {
-		uuidDishId, err := uuid.Parse(dishId)
-		if err != nil {
-			return nil, err
-		}
-		dishIds[i] = uuidDishId
-	}
-
 	locations, err := unmarshalLocations(rm.Locations)
 	if err != nil {
 		return nil, err
 	}
 
 	return &restaurant.Restaurant{
-		RestaurantId: restaurantId,
-		DishIds:      dishIds,
+		RestaurantId: rm.RestaurantId,
+		DishIds:      rm.DishIds,
 		Name:         rm.Name,
 		Locations:    locations,
 	}, nil
@@ -52,18 +38,13 @@ func unmarshalLocations(locations []LocationModel) ([]restaurant.Location, error
 }
 
 func unmarshalDish(dm *DishModel) (*dish.Dish, error) {
-	dishId, err := uuid.Parse(dm.DishId)
-	if err != nil {
-		return nil, err
-	}
-
 	allergens, err := unmarshalAllergens(dm.Allergens)
 	if err != nil {
 		return nil, err
 	}
 
 	return &dish.Dish{
-		DishId:    dishId,
+		DishId:    dm.DishId,
 		Name:      dm.Name,
 		Allergens: allergens,
 	}, nil
@@ -88,15 +69,10 @@ func marshalRestaurant(restaurant restaurant.Restaurant) (*RestaurantModel, erro
 		return nil, err
 	}
 
-	dishIds := make([]string, len(restaurant.DishIds))
-	for i, dishId := range restaurant.DishIds {
-		dishIds[i] = dishId.String()
-	}
-
 	return &RestaurantModel{
 		ID:           primitive.NewObjectID(),
-		RestaurantId: restaurant.RestaurantId.String(),
-		DishIds:      dishIds,
+		RestaurantId: restaurant.RestaurantId,
+		DishIds:      restaurant.DishIds,
 		Name:         restaurant.Name,
 		Locations:    locations,
 	}, nil
@@ -128,7 +104,7 @@ func marshalDish(dish dish.Dish) (*DishModel, error) {
 
 	return &DishModel{
 		ID:        primitive.NewObjectID(),
-		DishId:    dish.DishId.String(),
+		DishId:    dish.DishId,
 		Name:      dish.Name,
 		Allergens: allergens,
 	}, nil

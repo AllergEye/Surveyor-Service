@@ -129,7 +129,7 @@ func (r RestaurantRepositoryImplementation) UpdateRestaurantLocations(ctx contex
 	}
 
 	coll := r.client.Database("allergeye").Collection("restaurants")
-	filter := bson.D{{"restaurant_id", restaurant.RestaurantId.String()}}
+	filter := bson.D{{"restaurant_id", restaurant.RestaurantId}}
 	change := bson.M{"$push": bson.M{"locations": bson.M{"$each": models}}}
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 

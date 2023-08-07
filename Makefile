@@ -6,6 +6,8 @@ mocks:
 	mockgen -source=./internal/database/restaurant_repository.go -destination=./pkg/surveyor/mocks/database/restaurant_repository.go
 	mockgen -source=./internal/database/dish_repository.go -destination=./pkg/surveyor/mocks/database/dish_repository.go
 	mockgen -source=./internal/lib/helpers.go -destination=./pkg/surveyor/mocks/lib/helpers.go
+	mockgen -source=./pkg/surveyor/dish/service.go -destination=./pkg/surveyor/mocks/dish/service.go
+	mockgen -source=./pkg/surveyor/dish/marshallers.go -destination=./pkg/surveyor/mocks/dish/marshallers.go
 
 test:
 	go test ./... -cover

@@ -34,7 +34,7 @@ func (ds DishServiceImplementation) GetDishesByRestaurantId(ctx context.Context,
 	}
 	dishes := make([]dish.Dish, len(restaurant.DishIds))
 	for i, dishId := range restaurant.DishIds {
-		dishToRetrieve, err := ds.DishRepo.GetDishById(ctx, dishId.String())
+		dishToRetrieve, err := ds.DishRepo.GetDishById(ctx, dishId)
 		if err != nil {
 			return []dish.Dish{}, err
 		}
@@ -46,7 +46,7 @@ func (ds DishServiceImplementation) GetDishesByRestaurantId(ctx context.Context,
 func (ds DishServiceImplementation) AddDishesToRestaurant(ctx context.Context, restaurantId string, dishes []dish.Dish) error {
 	dishIds := make([]string, len(dishes))
 	for i, dish := range dishes {
-		dishIds[i] = dish.DishId.String()
+		dishIds[i] = dish.DishId
 	}
 
 	err := ds.RestaurantRepo.AddDishesToRestaurant(ctx, restaurantId, dishIds)

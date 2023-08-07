@@ -9,7 +9,6 @@ import (
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	mock_database "github.com/allergeye/surveyor-service/pkg/surveyor/mocks/database"
 	. "github.com/allergeye/surveyor-service/pkg/surveyor/restaurant"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/mock/gomock"
@@ -62,7 +61,8 @@ func Test_Service_NewRestaruantService(t *testing.T) {
 func Test_Service_GetAllRestaurants(t *testing.T) {
 	restaurants := []restaurant.Restaurant{
 		{
-			Name: "Restaurant1",
+			RestaurantId: "restaurant1",
+			Name:         "Restaurant1",
 			Locations: []restaurant.Location{
 				{
 					StreetAddressLine1: "Restaurant1 Street",
@@ -75,7 +75,8 @@ func Test_Service_GetAllRestaurants(t *testing.T) {
 			},
 		},
 		{
-			Name: "Restaurant2",
+			RestaurantId: "restaurant2",
+			Name:         "Restaurant2",
 			Locations: []restaurant.Location{
 				{
 					StreetAddressLine1: "Restaurant2 Street",
@@ -128,7 +129,7 @@ func Test_Service_AddRestaurant(t *testing.T) {
 	restaurantName := "Restaurant1"
 
 	restaurantToAdd := restaurant.Restaurant{
-		RestaurantId: uuid.MustParse("52fdfc07-2182-454f-963f-5f0f9a621d72"),
+		RestaurantId: "restaurant1",
 		Name:         "Restaurant1",
 		Locations: []restaurant.Location{
 			{
@@ -140,7 +141,7 @@ func Test_Service_AddRestaurant(t *testing.T) {
 				PostalCode:         "PostalCode",
 			},
 		},
-		DishIds: []uuid.UUID{uuid.New(), uuid.New()},
+		DishIds: []string{"dish1", "dish2"},
 	}
 
 	newLocations := []restaurant.Location{
@@ -163,7 +164,7 @@ func Test_Service_AddRestaurant(t *testing.T) {
 	}
 
 	existingRestaurant1 := restaurant.Restaurant{
-		RestaurantId: uuid.MustParse("52fdfc07-2182-454f-963f-5f0f9a621d72"),
+		RestaurantId: "resturant1",
 		Name:         "Restaurant1",
 		Locations: []restaurant.Location{
 			{
@@ -175,12 +176,13 @@ func Test_Service_AddRestaurant(t *testing.T) {
 				PostalCode:         "PostalCode",
 			},
 		},
-		DishIds: []uuid.UUID{uuid.New(), uuid.New()},
+		DishIds: []string{"dish1", "dish2"},
 	}
 
 	dishesToAdd := []dish.Dish{
 		{
-			Name: "Dish 1",
+			DishId: "dish1",
+			Name:   "Dish 1",
 			Allergens: []dish.Allergen{
 				{
 					Name:        "SESAME",
@@ -193,7 +195,8 @@ func Test_Service_AddRestaurant(t *testing.T) {
 			},
 		},
 		{
-			Name: "Dish 2",
+			DishId: "dish2",
+			Name:   "Dish 2",
 			Allergens: []dish.Allergen{
 				{
 					Name:        "EGGS",

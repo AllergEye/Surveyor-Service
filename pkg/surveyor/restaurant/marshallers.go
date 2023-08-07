@@ -3,7 +3,6 @@ package surveyor_restaurant
 import (
 	"github.com/allergeye/surveyor-service/internal/domain/dish"
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
-	"github.com/google/uuid"
 )
 
 type Marshallers interface {
@@ -28,10 +27,9 @@ func (m MarshallersImplementation) MarshalRestaurantRequestBody(restaurantReques
 	if err != nil {
 		return nil, []dish.Dish{}, err
 	}
-	dishIds := make([]uuid.UUID, len(dishes))
+	dishIds := make([]string, len(dishes))
 	for i, dish := range dishes {
-		dishId := dish.DishId
-		dishIds[i] = dishId
+		dishIds[i] = dish.DishId
 	}
 
 	restaurant := restaurant.NewRestaurant(dishIds, restaurantRequestBody.Name, locations)

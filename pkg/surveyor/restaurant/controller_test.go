@@ -9,7 +9,6 @@ import (
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	mock_surveyor "github.com/allergeye/surveyor-service/pkg/surveyor/mocks/restaurant"
 	. "github.com/allergeye/surveyor-service/pkg/surveyor/restaurant"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -43,7 +42,7 @@ func newFakeController(cm controllerMock) RestaurantControllerImplementation {
 }
 
 func Test_Controller_NewRestaruantController(t *testing.T) {
-	t.Run("returns a new service with expected values", func(t *testing.T) {
+	t.Run("returns a new controller with expected values", func(t *testing.T) {
 		cm := newControllerMock(t)
 
 		expectedController := RestaurantControllerImplementation{
@@ -60,7 +59,8 @@ func Test_Controller_NewRestaruantController(t *testing.T) {
 func Test_Controller_GetAllRestaurants(t *testing.T) {
 	restaurants := []restaurant.Restaurant{
 		{
-			Name: "Restaurant1",
+			RestaurantId: "restaurant1",
+			Name:         "Restaurant1",
 			Locations: []restaurant.Location{
 				{
 					StreetAddressLine1: "Restaurant1 Street",
@@ -73,7 +73,8 @@ func Test_Controller_GetAllRestaurants(t *testing.T) {
 			},
 		},
 		{
-			Name: "Restaurant2",
+			RestaurantId: "restaurant2",
+			Name:         "Restaurant2",
 			Locations: []restaurant.Location{
 				{
 					StreetAddressLine1: "Restaurant2 Street",
@@ -175,7 +176,8 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 
 	expectedDishes := []dish.Dish{
 		{
-			Name: "Dish 1",
+			DishId: "dish1",
+			Name:   "Dish 1",
 			Allergens: []dish.Allergen{
 				{
 					Name:        "SESAME",
@@ -188,7 +190,8 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 			},
 		},
 		{
-			Name: "Dish 2",
+			DishId: "dish2",
+			Name:   "Dish 2",
 			Allergens: []dish.Allergen{
 				{
 					Name:        "EGGS",
@@ -203,7 +206,7 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 	}
 
 	expectedRestaurant := restaurant.Restaurant{
-		RestaurantId: uuid.MustParse("52fdfc07-2182-454f-963f-5f0f9a621d72"),
+		RestaurantId: "restaurant1",
 		Name:         "Restaurant1",
 		Locations: []restaurant.Location{
 			{
@@ -215,7 +218,7 @@ func Test_Controller_AddRestaurant(t *testing.T) {
 				PostalCode:         "PostalCode",
 			},
 		},
-		DishIds: []uuid.UUID{uuid.New(), uuid.New()},
+		DishIds: []string{"dish1", "dish2"},
 	}
 
 	randomErr := errors.New("random error")

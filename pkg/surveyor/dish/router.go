@@ -31,7 +31,12 @@ func NewDishRouter(logger *zap.SugaredLogger, dishController DishController) Dis
 }
 
 func (dr DishRouterImplementation) GetDishesByRestaurantId(c *gin.Context) {
-	dishes, err := dr.DishController.GetDishesByRestaurantId(c)
+	restaurantId := c.Param("restaurantId")
+	if restaurantId == "" {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	dishes, err := dr.DishController.GetDishesByRestaurantId(c, restaurantId)
 	if err != nil {
 		if errors.Is(err, ErrInvalidRestaurantId) {
 			c.Status(http.StatusBadRequest)
