@@ -6,7 +6,7 @@ COPY . ./
 
 RUN go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /surveyor-service
+RUN CGO_ENABLED=0 GOOS=linux go build /app/cmd/surveyor -o /surveyor-service
 
 EXPOSE 8080
 
