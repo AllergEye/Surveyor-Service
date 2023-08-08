@@ -2,19 +2,29 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/allergeye/surveyor-service/internal/database"
 	surveyor_dish "github.com/allergeye/surveyor-service/pkg/surveyor/dish"
 	surveyor_restaurant "github.com/allergeye/surveyor-service/pkg/surveyor/restaurant"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 )
 
 func main() {
+	if os.Getenv("ENV") != "prod" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("could not load .env file")
+		}
+	}
+
 	r := gin.New()
 
 	r.Use(gin.Recovery())
@@ -25,7 +35,10 @@ func main() {
 	}
 
 	sugar := logger.Sugar()
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+
+	connString := fmt.Sprintf("%v://%v:%v@%v/?%v", os.Getenv("DB_CONN_METHOD"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_CONN_OPTIONS"))
+
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(connString))
 	if err != nil {
 		log.Fatal(err)
 	}
