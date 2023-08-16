@@ -66,7 +66,7 @@ func main() {
 	restaurant := r.Group("/restaurant")
 	{
 		restaurant.GET("/", restaurantRouter.GetAllRestaurants)
-		restaurant.GET("/dishes/:restaurantId", restaurantRouter.GetDishesForRestaurant)
+		restaurant.GET("/:restaurantId/dishes", restaurantRouter.GetDishesForRestaurant)
 		restaurant.POST("/", restaurantRouter.AddRestaurant)
 	}
 	dish := r.Group("/dish")
