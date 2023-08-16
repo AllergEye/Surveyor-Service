@@ -8,9 +8,16 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	ErrRestaurantAlreadyExists = errors.New("a restaurant with that name already exists")
+	ErrInvalidRestaurantId     = errors.New("invalid restaurant id")
+	ErrRestaurantNotFound      = errors.New("a restaurant with that id could not be found")
+)
+
 type RestaurantRouter interface {
 	GetAllRestaurants(c *gin.Context)
 	AddRestaurant(c *gin.Context)
+	GetDishesForRestaurant(c *gin.Context)
 }
 
 type RestaurantRouterImplementation struct {
@@ -62,4 +69,27 @@ func (r RestaurantRouterImplementation) AddRestaurant(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func (r RestaurantRouterImplementation) GetDishesForRestaurant(c *gin.Context) {
+	restaurantId := c.Param("restaurantId")
+	if restaurantId == "" {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	dishes, err := r.restaurantController.GetDishesForRestaurant(c, restaurantId)
+	if err != nil {
+		if errors.Is(err, ErrInvalidRestaurantId) {
+			c.Status(http.StatusBadRequest)
+			return
+		} else if errors.Is(err, ErrRestaurantNotFound) {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"dishes": dishes,
+	})
 }

@@ -9,7 +9,6 @@ import (
 )
 
 type DishService interface {
-	GetDishesByRestaurantId(ctx context.Context, restaurantId string) ([]dish.Dish, error)
 	AddDishesToRestaurant(ctx context.Context, restaurantId string, dishes []dish.Dish) error
 }
 
@@ -25,22 +24,6 @@ func NewDishService(logger *zap.SugaredLogger, restaurantRepo database.Restauran
 		RestaurantRepo: restaurantRepo,
 		DishRepo:       dishRepo,
 	}
-}
-
-func (ds DishServiceImplementation) GetDishesByRestaurantId(ctx context.Context, restaurantId string) ([]dish.Dish, error) {
-	restaurant, err := ds.RestaurantRepo.GetRestaurantById(ctx, restaurantId)
-	if err != nil {
-		return []dish.Dish{}, err
-	}
-	dishes := make([]dish.Dish, len(restaurant.DishIds))
-	for i, dishId := range restaurant.DishIds {
-		dishToRetrieve, err := ds.DishRepo.GetDishById(ctx, dishId)
-		if err != nil {
-			return []dish.Dish{}, err
-		}
-		dishes[i] = *dishToRetrieve
-	}
-	return dishes, nil
 }
 
 func (ds DishServiceImplementation) AddDishesToRestaurant(ctx context.Context, restaurantId string, dishes []dish.Dish) error {

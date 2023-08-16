@@ -13,6 +13,7 @@ import (
 type RestaurantService interface {
 	GetAllRestaurants(ctx context.Context) ([]restaurant.Restaurant, error)
 	AddRestaurant(ctx context.Context, restaurant restaurant.Restaurant, dishesToAdd []dish.Dish) error
+	GetDishesForRestaurant(ctx context.Context, restaurantId string) ([]dish.Dish, error)
 }
 
 type RestaurantServiceImplementation struct {
@@ -20,10 +21,6 @@ type RestaurantServiceImplementation struct {
 	RestaurantRepo database.RestaurantRepository
 	DishRepo       database.DishRepository
 }
-
-var (
-	ErrRestaurantAlreadyExists = errors.New("a restaurant with that name already exists")
-)
 
 func NewRestaurantService(logger *zap.SugaredLogger, restaurantRepo database.RestaurantRepository, dishRepo database.DishRepository) RestaurantService {
 	return RestaurantServiceImplementation{
@@ -80,6 +77,25 @@ func (s RestaurantServiceImplementation) AddRestaurant(ctx context.Context, rest
 	}
 
 	return nil
+}
+
+func (s RestaurantServiceImplementation) GetDishesForRestaurant(ctx context.Context, restaurantId string) ([]dish.Dish, error) {
+	restaurant, err := s.RestaurantRepo.GetRestaurantById(ctx, restaurantId)
+	if err != nil {
+		if errors.Is(err, database.ErrRestaurantNotFound) {
+			return []dish.Dish{}, ErrRestaurantNotFound
+		}
+		return []dish.Dish{}, err
+	}
+	dishes := make([]dish.Dish, len(restaurant.DishIds))
+	for i, dishId := range restaurant.DishIds {
+		dishToRetrieve, err := s.DishRepo.GetDishById(ctx, dishId)
+		if err != nil {
+			return []dish.Dish{}, err
+		}
+		dishes[i] = *dishToRetrieve
+	}
+	return dishes, nil
 }
 
 func (s RestaurantServiceImplementation) locationsMatch(location restaurant.Location, targetLocation restaurant.Location) bool {

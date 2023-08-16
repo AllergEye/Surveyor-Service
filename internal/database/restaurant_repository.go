@@ -2,12 +2,17 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+var (
+	ErrRestaurantNotFound = errors.New("a restaurant with that id could not be found")
 )
 
 type RestaurantRepository interface {
@@ -81,6 +86,9 @@ func (r RestaurantRepositoryImplementation) GetRestaurantById(ctx context.Contex
 
 	err := coll.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, fmt.Errorf("restaurantRepository.GetRestaurantById: %w, %v", ErrRestaurantNotFound, ErrRestaurantNotFound)
+		}
 		return nil, fmt.Errorf("restaurantRepository.GetRestaurantById: %w, %v", err, err)
 	}
 

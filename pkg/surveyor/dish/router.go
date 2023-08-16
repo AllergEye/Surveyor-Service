@@ -14,7 +14,6 @@ var (
 )
 
 type DishRouter interface {
-	GetDishesByRestaurantId(c *gin.Context)
 	AddDishesToRestaurant(c *gin.Context)
 }
 
@@ -28,26 +27,6 @@ func NewDishRouter(logger *zap.SugaredLogger, dishController DishController) Dis
 		Logger:         logger,
 		DishController: dishController,
 	}
-}
-
-func (dr DishRouterImplementation) GetDishesByRestaurantId(c *gin.Context) {
-	restaurantId := c.Param("restaurantId")
-	if restaurantId == "" {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	dishes, err := dr.DishController.GetDishesByRestaurantId(c, restaurantId)
-	if err != nil {
-		if errors.Is(err, ErrInvalidRestaurantId) {
-			c.Status(http.StatusBadRequest)
-			return
-		}
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"dishes": dishes,
-	})
 }
 
 func (dr DishRouterImplementation) AddDishesToRestaurant(c *gin.Context) {

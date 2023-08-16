@@ -123,6 +123,63 @@ func Test_Controller_GetAllRestaurants(t *testing.T) {
 	}
 }
 
+func Test_Controller_GetDishesForRestaurant(t *testing.T) {
+	restaurantId := "restaurant1"
+
+	dishes := []dish.Dish{
+		{
+			DishId: "dish1",
+			Name:   "Dish 1",
+			Allergens: []dish.Allergen{
+				{
+					Name:               "SESAME",
+					IsProbabilityKnown: true,
+					Probability:        100,
+				},
+			},
+		},
+		{
+			DishId:    "dish2",
+			Name:      "Dish 2",
+			Allergens: []dish.Allergen{},
+		},
+	}
+
+	randomErr := errors.New("random error")
+
+	tests := map[string]struct {
+		mocks       func() controllerMock
+		expectedErr error
+	}{
+		"successfully retrieves the dishes belonging to a particular restaurant": {
+			mocks: func() controllerMock {
+				cm := newControllerMock(t)
+				cm.restaurantService.EXPECT().GetDishesForRestaurant(gomock.Any(), restaurantId).Return(dishes, nil)
+				return cm
+			},
+		},
+		"returns an error if the dishes belonging to a particular restaurant could not be retrieved": {
+			mocks: func() controllerMock {
+				cm := newControllerMock(t)
+				cm.restaurantService.EXPECT().GetDishesForRestaurant(gomock.Any(), restaurantId).Return([]dish.Dish{}, randomErr)
+				return cm
+			},
+			expectedErr: randomErr,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			cm := tt.mocks()
+			c := newFakeController(cm)
+			ctx := context.Background()
+
+			_, err := c.GetDishesForRestaurant(ctx, restaurantId)
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
 func Test_Controller_AddRestaurant(t *testing.T) {
 	restaurantRequest := AddRestaurantRequestBody{
 		Name: "Restaurant1",

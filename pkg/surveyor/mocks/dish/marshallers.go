@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	dish "github.com/allergeye/surveyor-service/internal/domain/dish"
-	dish0 "github.com/allergeye/surveyor-service/pkg/surveyor/dish"
+	surveyor_dish "github.com/allergeye/surveyor-service/pkg/surveyor/dish"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -36,7 +36,7 @@ func (m *MockMarshallers) EXPECT() *MockMarshallersMockRecorder {
 }
 
 // MarshalAddDishesToRestaurantDishesAllergensRequestBody mocks base method.
-func (m *MockMarshallers) MarshalAddDishesToRestaurantDishesAllergensRequestBody(addDishesToRestaurantDishesAllergensRequestBody []dish0.AddDishesToRestaurantDishesAllergensRequestBody) ([]dish.Allergen, error) {
+func (m *MockMarshallers) MarshalAddDishesToRestaurantDishesAllergensRequestBody(addDishesToRestaurantDishesAllergensRequestBody []surveyor_dish.AddDishesToRestaurantDishesAllergensRequestBody) ([]dish.Allergen, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MarshalAddDishesToRestaurantDishesAllergensRequestBody", addDishesToRestaurantDishesAllergensRequestBody)
 	ret0, _ := ret[0].([]dish.Allergen)
@@ -51,7 +51,7 @@ func (mr *MockMarshallersMockRecorder) MarshalAddDishesToRestaurantDishesAllerge
 }
 
 // MarshalAddDishesToRestaurantDishesRequestBody mocks base method.
-func (m *MockMarshallers) MarshalAddDishesToRestaurantDishesRequestBody(addDishesToRestaurantDishesRequestBody []dish0.AddDishesToRestaurantDishesRequestBody) ([]dish.Dish, error) {
+func (m *MockMarshallers) MarshalAddDishesToRestaurantDishesRequestBody(addDishesToRestaurantDishesRequestBody []surveyor_dish.AddDishesToRestaurantDishesRequestBody) ([]dish.Dish, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MarshalAddDishesToRestaurantDishesRequestBody", addDishesToRestaurantDishesRequestBody)
 	ret0, _ := ret[0].([]dish.Dish)
@@ -66,7 +66,7 @@ func (mr *MockMarshallersMockRecorder) MarshalAddDishesToRestaurantDishesRequest
 }
 
 // MarshalAddDishesToRestaurantRequestBody mocks base method.
-func (m *MockMarshallers) MarshalAddDishesToRestaurantRequestBody(addDishesToRestaurantRequestBody dish0.AddDishesToRestaurantRequestBody) (string, []dish.Dish, error) {
+func (m *MockMarshallers) MarshalAddDishesToRestaurantRequestBody(addDishesToRestaurantRequestBody surveyor_dish.AddDishesToRestaurantRequestBody) (string, []dish.Dish, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MarshalAddDishesToRestaurantRequestBody", addDishesToRestaurantRequestBody)
 	ret0, _ := ret[0].(string)

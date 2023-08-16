@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/allergeye/surveyor-service/internal/domain/dish"
-	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	. "github.com/allergeye/surveyor-service/pkg/surveyor/dish"
 	mock_database "github.com/allergeye/surveyor-service/pkg/surveyor/mocks/database"
 	"github.com/stretchr/testify/assert"
@@ -55,80 +54,6 @@ func Test_Service_NewDishService(t *testing.T) {
 		newService := NewDishService(sm.logger, sm.restaurantRepo, sm.dishRepo)
 		assert.Equal(t, expectedService, newService)
 	})
-}
-
-func Test_Service_GetDishesByRestaurantId(t *testing.T) {
-	restaurantId := "restaurant-id"
-
-	dishes := []dish.Dish{
-		{
-			DishId: "dish1",
-			Name:   "Dish 1",
-			Allergens: []dish.Allergen{
-				{
-					Name:               "SESAME",
-					IsProbabilityKnown: true,
-					Probability:        100,
-				},
-			},
-		},
-		{
-			DishId:    "dish2",
-			Name:      "Dish 2",
-			Allergens: []dish.Allergen{},
-		},
-	}
-
-	restaurant := restaurant.Restaurant{
-		RestaurantId: "restaurant1",
-		Name:         "Restaurant 1",
-		DishIds:      []string{"dish1", "dish2"},
-	}
-
-	randomErr := errors.New("random error")
-
-	tests := map[string]struct {
-		mocks       func() serviceMock
-		expectedErr error
-	}{
-		"successfully gets a restaurant's dishes by its id": {
-			mocks: func() serviceMock {
-				sm := newServiceMock(t)
-				sm.restaurantRepo.EXPECT().GetRestaurantById(gomock.Any(), restaurantId).Return(&restaurant, nil)
-				sm.dishRepo.EXPECT().GetDishById(gomock.Any(), restaurant.DishIds[0]).Return(&dishes[0], nil)
-				sm.dishRepo.EXPECT().GetDishById(gomock.Any(), restaurant.DishIds[1]).Return(&dishes[1], nil)
-				return sm
-			},
-		},
-		"returns an error if the restaurant could not be retrieved by id": {
-			mocks: func() serviceMock {
-				sm := newServiceMock(t)
-				sm.restaurantRepo.EXPECT().GetRestaurantById(gomock.Any(), restaurantId).Return(nil, randomErr)
-				return sm
-			},
-			expectedErr: randomErr,
-		},
-		"returns an error if a given dish could not be retrieved by its id": {
-			mocks: func() serviceMock {
-				sm := newServiceMock(t)
-				sm.restaurantRepo.EXPECT().GetRestaurantById(gomock.Any(), restaurantId).Return(&restaurant, nil)
-				sm.dishRepo.EXPECT().GetDishById(gomock.Any(), restaurant.DishIds[0]).Return(nil, randomErr)
-				return sm
-			},
-			expectedErr: randomErr,
-		},
-	}
-
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			sm := tt.mocks()
-			s := newFakeService(sm)
-			ctx := context.Background()
-
-			_, err := s.GetDishesByRestaurantId(ctx, restaurantId)
-			assert.Equal(t, tt.expectedErr, err)
-		})
-	}
 }
 
 func Test_Service_AddDishesToRestaurant(t *testing.T) {

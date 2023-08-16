@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/allergeye/surveyor-service/internal/domain/dish"
 	"github.com/allergeye/surveyor-service/internal/domain/restaurant"
 	"go.uber.org/zap"
 )
@@ -15,6 +16,7 @@ var (
 type RestaurantController interface {
 	GetAllRestaurants(ctx context.Context) ([]restaurant.Restaurant, error)
 	AddRestaurant(ctx context.Context, requestBody AddRestaurantRequestBody) error
+	GetDishesForRestaurant(ctx context.Context, restaurantId string) ([]dish.Dish, error)
 }
 
 type RestaurantControllerImplementation struct {
@@ -51,4 +53,12 @@ func (c RestaurantControllerImplementation) AddRestaurant(ctx context.Context, r
 	}
 
 	return nil
+}
+
+func (c RestaurantControllerImplementation) GetDishesForRestaurant(ctx context.Context, restaurantId string) ([]dish.Dish, error) {
+	dishes, err := c.RestaurantService.GetDishesForRestaurant(ctx, restaurantId)
+	if err != nil {
+		return []dish.Dish{}, err
+	}
+	return dishes, nil
 }
