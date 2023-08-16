@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/allergeye/surveyor-service/internal/database"
+	auth_middleware "github.com/allergeye/surveyor-service/internal/middlewares/auth"
 	surveyor_dish "github.com/allergeye/surveyor-service/pkg/surveyor/dish"
 	surveyor_restaurant "github.com/allergeye/surveyor-service/pkg/surveyor/restaurant"
 	"github.com/gin-gonic/gin"
@@ -67,7 +68,7 @@ func main() {
 	{
 		restaurant.GET("/", restaurantRouter.GetAllRestaurants)
 		restaurant.GET("/:restaurantId/dishes", restaurantRouter.GetDishesForRestaurant)
-		restaurant.POST("/", restaurantRouter.AddRestaurant)
+		restaurant.POST("/", auth_middleware.AuthMiddleware(), restaurantRouter.AddRestaurant)
 	}
 	dish := r.Group("/dish")
 	{
