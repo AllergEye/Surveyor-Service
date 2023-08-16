@@ -72,7 +72,7 @@ func main() {
 	}
 	dish := r.Group("/dish")
 	{
-		dish.POST("/", dishRouter.AddDishesToRestaurant)
+		dish.POST("/", auth_middleware.AuthMiddleware(), dishRouter.AddDishesToRestaurant)
 	}
 
 	r.GET("/ping", func(c *gin.Context) {
